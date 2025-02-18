@@ -1,0 +1,36 @@
+# Archivos del sistema
+.DS_Store
+Thumbs.db
+
+# Ignorar archivos de configuración específicos del entorno
+.vscode/
+
+# Entornos virtuales
+.venv/
+env/
+*/.conda/
+
+# Archivos de Python innecesarios
+__pycache__/
+*.pyc
+*.pyo
+
+# Carpetas innecesarias
+SoftwareGasControl/
+
+# Dependencias
+Pipfile.lock
+poetry.lock
+
+# Archivos generados
+*.log
+*.tmp
+*.bak
+
+# Archivos de Jupyter
+.ipynb_checkpoints/
+
+# Archivos específicos de tu proyecto
+*.docx
+*.pdf
+*.bat

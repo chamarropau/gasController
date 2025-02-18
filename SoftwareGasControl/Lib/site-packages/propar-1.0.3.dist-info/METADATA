@@ -1,0 +1,55 @@
+Metadata-Version: 2.1
+Name: propar
+Version: 1.0.3
+Summary: Run terminal commands easily!
+Author: Schkimansky
+Author-email: <ahmadchawla1432@gmail.com>
+Keywords: python,terminal,bash,command,commands,terminal command runner,execute command,run commands
+Classifier: Development Status :: 5 - Production/Stable
+Classifier: Intended Audience :: Developers
+Classifier: Programming Language :: Python :: 3
+Classifier: Operating System :: Unix
+Classifier: Operating System :: MacOS :: MacOS X
+Classifier: Operating System :: Microsoft :: Windows
+Description-Content-Type: text/markdown
+License-File: LICENSE
+
+
+# Donations
+It takes me a long time to make these libraries. If you would like to support my work, Then you can follow my patreon :)
+
+https://www.patreon.com/Schkimansky
+
+# Library
+This is a easy to use python library that allows you to run terminal commands easily. 
+
+```python
+import propar
+result = propar.run_command('echo Hello, MG?')
+print(result)
+```
+
+# Installation
+```bash
+pip install propar
+```
+
+# Documentation
+There are only 2 functions:
+```python
+run_command(command: str, timeout=None, get_both_output_and_errors=False, get_return_code=False)
+run_commands(commands_array: list[str], timeout=None, get_both_output_and_errors=False, get_return_code=False)
+```
+
+Run_command takes a command as a string and then runs it. The return value of the function depends on the parameters.
+For example, In this case the return value will be the text that you get when you run the command manually in the terminal.
+```python
+result = run_command("mkdir NewFolder") # If this command gets a error, it will return the error. However if theres no error, Then it will just return the text you get when you execute that command manually.
+```
+
+However, you can put a timeout parameter to stop the function once it takes too long (defined in seconds)
+
+Also, theres the run_commands function.
+Its the same as run_command but this time it runs multiple commands.
+
+Thats pretty much all, This can be used as a alternative to CMake. And is more powerfull, easier, extensible, simpler, reliable

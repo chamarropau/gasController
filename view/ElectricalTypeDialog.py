@@ -289,14 +289,14 @@ class ElectricalTypeDialog(QDialog):
         # Create a dictionary asigned to configured_el_type with the non-empty values
         self.configured_el_type = {
             "electrical_type": selected_type,
-            "voltage": voltage_value or None,
-            "final_voltage": final_voltage_value or None,
-            "current": current_value or None,
-            "final_current": final_current_value or None,
+            "voltage": voltage_value or 0,
+            "final_voltage": final_voltage_value or 0,
+            "current": current_value or 0,
+            "final_current": final_current_value or 0,
             "unit": unit_value or None,
             "initial_unit": initial_unit_value or None,
             "final_unit": final_unit_value or None,
-            "n_points": n_points_value or None
+            "n_points": n_points_value or 0
         }
 
         # Remove the None values from the dictionary

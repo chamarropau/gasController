@@ -599,6 +599,18 @@ class App(QMainWindow):
     # Método modificado en la clase App
     def start(self):
 
+        # Clean the graphic
+        self.set_graphic()
+
+        self.valueA = []
+        self.valueB = []
+        self.prev_len = 0
+        self.valueC = []
+        self.valueD = []
+
+        self.controller.clean_measures()
+
+
         if not self.keithley_one.isEnabled() and not self.keithley_two.isEnabled() and not self.both_keithley.isEnabled():
             self.show_warning(NO_KEITHLEY_SELECTED)
         else:

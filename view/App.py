@@ -641,23 +641,24 @@ class App(QMainWindow):
                 print(excel["selected_file_path"], excel["sheet_name"])
                 file = excel['selected_file_path']
                 sheet = excel['sheet_name']
+                num_keithleys = self.controller.get_num_keithleys()
 
                 if not self.keithley_one.isEnabled():
                     self.set_graphic(x_label="Time (s)", y_label="Current (A)")
                     self.graphs = 1
-                    self.controller.set_mode("automatic", keithley_selected=1, excel=file, sheet=sheet)
+                    self.controller.set_mode("automatic", keithley_selected=1, excel=file, sheet=sheet, num_keithleys=num_keithleys)
                     self.keithley_selected = 1
 
                 elif not self.keithley_two.isEnabled():
                     self.set_graphic(x_label="Time (s)", y_label="Voltage (V)")
                     self.graphs = 1
-                    self.controller.set_mode("automatic", keithley_selected=2, excel=file, sheet=sheet)
+                    self.controller.set_mode("automatic", keithley_selected=2, excel=file, sheet=sheet, num_keithleys=num_keithleys)
                     self.keithley_selected = 2
 
                 elif not self.both_keithley.isEnabled():
                     self.set_graphic(x_label="Time (s)", y_label="Current (A)", num_graphs=2, additional_ylabel="Voltage (V)")
                     self.graphs = 2
-                    self.controller.set_mode("automatic", keithley_selected=3, excel=file, sheet=sheet)
+                    self.controller.set_mode("automatic", keithley_selected=3, excel=file, sheet=sheet, num_keithleys=num_keithleys)
                     self.keithley_selected = 3
 
                 self.run_mode_thread = RunModeThread(self.controller)

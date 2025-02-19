@@ -27,7 +27,7 @@ class Controller:
         self.mfc = MassFlowController([])
         self.mfc.clear_all_flows()
 
-    def set_mode(self, mode, flows=None, keithley_selected=None, excel=None, sheet=None, sv_time=None):
+    def set_mode(self, mode, flows=None, keithley_selected=None, excel=None, sheet=None, sv_time=None, num_keithleys=None):
         if mode == "manual":
             if flows is None:
                 flows = self.ask_for_flows()
@@ -38,7 +38,7 @@ class Controller:
             if excel is None and sheet is None:
                 excel = "./data/llibre_Input_Output_Estacio_gasos.xlsx"
                 sheet = "data"
-            self.mode = AutomaticMode(keithley_selected, self.keithleys, self.mfc, self.data_measurement, excel, sheet)
+            self.mode = AutomaticMode(keithley_selected, self.keithleys, self.mfc, self.data_measurement, excel, sheet, num_keithleys)
 
     def get_measurements(self):
         # If mode is ManualMode return 1, if it's AutomaticMode return 2, else return 0

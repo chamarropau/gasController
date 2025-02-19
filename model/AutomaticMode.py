@@ -10,11 +10,10 @@ from termcolor import colored
 import pandas as pd
 import time
 import re
-import signal
 
 class AutomaticMode:
 
-    def __init__(self, keithley_selected, keithleys, mfc, data_measurement, excel_path, excel_sheet):
+    def __init__(self, keithley_selected, keithleys, mfc, data_measurement, excel_path, excel_sheet, num_keithleys):
         self.keithley_selected = keithley_selected
         self.keithleys = keithleys
         self.mfc = mfc
@@ -22,6 +21,7 @@ class AutomaticMode:
         self.electrical_measurement = None
         self.excel_path = excel_path
         self.excel_sheet = excel_sheet
+        self.num_keithleys = num_keithleys
         if keithley_selected == 1 or keithley_selected == 2:
             self.barrier = Barrier(2)
         else:
@@ -93,7 +93,8 @@ class AutomaticMode:
                         self.thread_1.join()  # Asegurarse de que el hilo se cierre
 
                 elif self.keithley_selected == 2:
-                    electrical_measurement = self.__get_electrical_measurement(smu_2_mode, smu_2_value, smu_2_unit, measurement_time, 0)
+                    id = self.num_keithleys - 1
+                    electrical_measurement = self.__get_electrical_measurement(smu_2_mode, smu_2_value, smu_2_unit, measurement_time, id)
                     self.thread_1 = Thread(target=electrical_measurement.run, args=(self.barrier, self.stop_event))
                     self.thread_1.start()
 

@@ -92,6 +92,60 @@ class AutomaticMode:
                     finally:
                         self.thread_1.join()  # Asegurarse de que el hilo se cierre
 
+                elif self.keithley_selected == 2:
+                    electrical_measurement = self.__get_electrical_measurement(smu_2_mode, smu_2_value, smu_2_unit, measurement_time, 0)
+                    self.thread_1 = Thread(target=electrical_measurement.run, args=(self.barrier, self.stop_event))
+                    self.thread_1.start()
+
+                    data_manager = DataManager(self.mfc, [electrical_measurement], self.data_measurement, measurement_time, ad_time, sv_time)
+                    if self.start_time is None:
+                        self.start_time = time.time()
+                    elapsed_time = time.time() - self.start_time
+
+                    try:
+                        data = data_manager.run(self.barrier, elapsed_time=elapsed_time, saving_time=sv_time)
+                        self.data.append(data)  # Guardar datos en cada iteración
+
+                        measurement_data.append(data)  # Acumulando datos de esta medición
+
+                    except Exception as e:
+                        print(f"{colored('[ERROR]', 'red')} Error in measurement {i+1} point: {e}")
+                        # Guardar los datos acumulados hasta el fallo
+                        self.data.append(measurement_data)  # Guardar lo acumulado hasta el fallo
+
+                    finally:
+                        self.thread_1.join()
+
+                else:
+                    electrical_measurement_1 = self.__get_electrical_measurement(smu_1_mode, smu_1_value, smu_1_unit, measurement_time, 0)
+                    electrical_measurement_2 = self.__get_electrical_measurement(smu_2_mode, smu_2_value, smu_2_unit, measurement_time, 1)
+
+                    self.thread_1 = Thread(target=electrical_measurement_1.run, args=(self.barrier, self.stop_event))
+                    self.thread_2 = Thread(target=electrical_measurement_2.run, args=(self.barrier, self.stop_event))
+                    self.thread_1.start()
+                    self.thread_2.start()
+
+                    data_manager = DataManager(self.mfc, [electrical_measurement_1, electrical_measurement_2], self.data_measurement, measurement_time, ad_time, sv_time)
+                    if self.start_time is None:
+                        self.start_time = time.time()
+                    elapsed_time = time.time() - self.start_time
+
+                    try:
+                        data = data_manager.run(self.barrier, elapsed_time=elapsed_time, saving_time=sv_time)
+                        self.data.append(data)  # Guardar datos en cada iteración
+
+                        measurement_data.append(data)  # Acumulando datos de esta medición
+
+                    except Exception as e:
+                        print(f"{colored('[ERROR]', 'red')} Error in measurement {i+1} point: {e}")
+                        # Guardar los datos acumulados hasta el fallo
+                        self.data.append(measurement_data)  # Guardar lo acumulado hasta el fallo
+
+                    finally:
+                        self.thread_1.join()
+                        self.thread_2.join()
+
+
         except Exception as e:
             print(f"\n\n{colored('[STATUS]', 'red')} Error occurred: {e}\n\n")
         finally:

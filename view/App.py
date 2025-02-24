@@ -649,42 +649,52 @@ class App(QMainWindow):
                     self.timer.start(5)
 
             elif self.automatic_mode_checkbox.isChecked():
-                excel = self.get_automatic_values()
-                print(excel["selected_file_path"], excel["sheet_name"])
-                file = excel['selected_file_path']
-                sheet = excel['sheet_name']
-                num_keithleys = self.controller.get_num_keithleys()
+                if self.selected_file_path is None:
+                    self.show_warning(NO_FILE_SELECTED)
+                else:
+                    if self.sheet_name_input.text() == "":
+                        self.show_warning(NO_DATA_SHEET_SELECTED)
+                    
+                    else:
+                        if self.keithley_one.isEnabled() and self.keithley_two.isEnabled() and self.both_keithley.isEnabled():
+                            self.show_warning(NO_KEITHLEY_SELECTED)
+                        else:
+                            excel = self.get_automatic_values()
+                            print(excel["selected_file_path"], excel["sheet_name"])
+                            file = excel['selected_file_path']
+                            sheet = excel['sheet_name']
+                            num_keithleys = self.controller.get_num_keithleys()
 
-                if not self.keithley_one.isEnabled():
-                    self.set_graphic(x_label="Time (s)", y_label="Current (A)")
-                    self.graphs = 1
-                    self.controller.set_mode("automatic", keithley_selected=1, excel=file, sheet=sheet, num_keithleys=num_keithleys)
-                    self.keithley_selected = 1
+                            if not self.keithley_one.isEnabled():
+                                self.set_graphic(x_label="Time (s)", y_label="Current (A)")
+                                self.graphs = 1
+                                self.controller.set_mode("automatic", keithley_selected=1, excel=file, sheet=sheet, num_keithleys=num_keithleys)
+                                self.keithley_selected = 1
 
-                elif not self.keithley_two.isEnabled():
-                    self.set_graphic(x_label="Time (s)", y_label="Voltage (V)")
-                    self.graphs = 1
-                    self.controller.set_mode("automatic", keithley_selected=2, excel=file, sheet=sheet, num_keithleys=num_keithleys)
-                    self.keithley_selected = 2
+                            elif not self.keithley_two.isEnabled():
+                                self.set_graphic(x_label="Time (s)", y_label="Voltage (V)")
+                                self.graphs = 1
+                                self.controller.set_mode("automatic", keithley_selected=2, excel=file, sheet=sheet, num_keithleys=num_keithleys)
+                                self.keithley_selected = 2
 
-                elif not self.both_keithley.isEnabled():
-                    self.set_graphic(x_label="Time (s)", y_label="Current (A)", num_graphs=2, additional_ylabel="Voltage (V)")
-                    self.graphs = 2
-                    self.controller.set_mode("automatic", keithley_selected=3, excel=file, sheet=sheet, num_keithleys=num_keithleys)
-                    self.keithley_selected = 3
+                            elif not self.both_keithley.isEnabled():
+                                self.set_graphic(x_label="Time (s)", y_label="Current (A)", num_graphs=2, additional_ylabel="Voltage (V)")
+                                self.graphs = 2
+                                self.controller.set_mode("automatic", keithley_selected=3, excel=file, sheet=sheet, num_keithleys=num_keithleys)
+                                self.keithley_selected = 3
 
-                self.run_mode_thread = RunModeThread(self.controller)
-                self.run_mode_thread.finished.connect(self.on_run_mode_finished)
-                self.run_mode_thread.error.connect(self.show_error)
+                            self.run_mode_thread = RunModeThread(self.controller)
+                            self.run_mode_thread.finished.connect(self.on_run_mode_finished)
+                            self.run_mode_thread.error.connect(self.show_error)
 
-                self.run_mode_thread.start()
- 
-                self.prev_len = 0
-                self.measures = []
-                self.timer = QTimer()
-                self.start_time = None
-                self.timer.timeout.connect(self.check_automatic_measures)
-                self.timer.start(5)
+                            self.run_mode_thread.start()
+            
+                            self.prev_len = 0
+                            self.measures = []
+                            self.timer = QTimer()
+                            self.start_time = None
+                            self.timer.timeout.connect(self.check_automatic_measures)
+                            self.timer.start(5)
 
             else:
                 self.show_warning(NO_MODE_SELECTED)

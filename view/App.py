@@ -27,6 +27,7 @@ NO_KEITHLEY_SELECTED = "You need to select at least one Keithley to run the prog
 NO_FLOWS_SET = "You need to set the flows for the MFCs."
 TOTAL_FLOW_HIGHER_THAN_MAX = "The total flow is higher than the maximum allowed. Please adjust the flows."
 MODE_RUNNED_SUCCESSFULLY = "The mode has been runned successfully. Proceding to the next step."
+NO_OUTPUT_EXCEL_NAME = "You need to enter an output excel name."
 
 class RunModeThread(QThread):
     finished = pyqtSignal()  # Señal para notificar cuando termine el modo
@@ -230,6 +231,10 @@ class App(QMainWindow):
         manual_layout.addWidget(QLabel("Saving Time"), 3, 0, 1, 1)
         manual_layout.addWidget(self.saving_time, 3, 2, 1, 2)
 
+        self.output_manual_label = QLabel("Output Excel:")
+        self.output_manual_input = QLineEdit()
+        self.output_manual_input.setPlaceholderText("Enter output excel name")
+
         self.mfc_checkboxes = {}
         self.mfc_spinboxes = {}
 
@@ -257,6 +262,10 @@ class App(QMainWindow):
         self.el_type_btn.clicked.connect(self.toggle_electrical_type)
 
         manual_layout.addWidget(self.el_type_btn, 10, 1, 1, 2)
+
+        # Añadimos ambos widgets en la fila 1
+        manual_layout.addWidget(self.output_manual_label, 11, 0,  1, 2)
+        manual_layout.addWidget(self.output_manual_input, 11, 1,  1, 2)
 
         # Set the layout of the manual mode group
         self.manual_mode_group.setLayout(manual_layout)
@@ -292,9 +301,15 @@ class App(QMainWindow):
         self.sheet_name_input = QLineEdit()
         self.sheet_name_input.setPlaceholderText("Enter sheet name")
 
+        self.output_automatic_label = QLabel("Output Excel:")
+        self.output_automatic_input = QLineEdit()
+        self.output_automatic_input.setPlaceholderText("Enter output excel name")
+
         # Añadimos ambos widgets en la fila 1
         automatic_layout.addWidget(self.sheet_name_label, 1, 0, alignment=Qt.AlignRight)
         automatic_layout.addWidget(self.sheet_name_input, 1, 1, alignment=Qt.AlignLeft)
+        automatic_layout.addWidget(self.output_automatic_label, 2, 0, alignment=Qt.AlignRight)
+        automatic_layout.addWidget(self.output_automatic_input, 2, 1, alignment=Qt.AlignLeft)
 
         # Añadimos el layout de cuadrícula al layout vertical
         vbox_layout.addLayout(automatic_layout)
@@ -473,11 +488,15 @@ class App(QMainWindow):
         elif self.sheet_name_input.text() == "":
             self.show_warning(NO_DATA_SHEET_SELECTED)
 
+        elif self.output_automatic_input.text() == "":
+            self.show_warning(NO_OUTPUT_EXCEL_NAME)
+
         else:
             # Return the selected file path
             data = {}
             data["selected_file_path"] = self.selected_file_path
             data["sheet_name"] = self.sheet_name_input.text()
+            data["output_excel_name"] = self.output_automatic_input.text()
             return data
         
 
@@ -621,9 +640,15 @@ class App(QMainWindow):
 
                 if mfcs == {}:
                     self.show_warning(NO_FLOWS_SET)
+
+                elif self.output_manual_input.text() == "":
+                    self.show_warning(NO_OUTPUT_EXCEL_NAME)
+
                 else:
                     print("Saving time: ", config["saving_time"])
-                    self.controller.set_mode("manual", flows=mfcs, keithley_selected=1, sv_time=config["saving_time"])
+                    name = self.output_manual_input.text()
+                    steps = type["n_points_value"]
+                    self.controller.set_mode("manual", flows=mfcs, keithley_selected=1, sv_time=config["saving_time"], output_excel=name, steps=steps)
 
                     measurement_time = config["measurement_time"]
                     ad_time = config["adquisition_time"]
@@ -664,23 +689,24 @@ class App(QMainWindow):
                             file = excel['selected_file_path']
                             sheet = excel['sheet_name']
                             num_keithleys = self.controller.get_num_keithleys()
+                            name = self.output_automatic_input.text()
 
                             if not self.keithley_one.isEnabled():
                                 self.set_graphic(x_label="Time (s)", y_label="Current (A)")
                                 self.graphs = 1
-                                self.controller.set_mode("automatic", keithley_selected=1, excel=file, sheet=sheet, num_keithleys=num_keithleys)
+                                self.controller.set_mode("automatic", keithley_selected=1, excel=file, sheet=sheet, num_keithleys=num_keithleys, output_excel=name)
                                 self.keithley_selected = 1
 
                             elif not self.keithley_two.isEnabled():
                                 self.set_graphic(x_label="Time (s)", y_label="Voltage (V)")
                                 self.graphs = 1
-                                self.controller.set_mode("automatic", keithley_selected=2, excel=file, sheet=sheet, num_keithleys=num_keithleys)
+                                self.controller.set_mode("automatic", keithley_selected=2, excel=file, sheet=sheet, num_keithleys=num_keithleys, output_excel=name)
                                 self.keithley_selected = 2
 
                             elif not self.both_keithley.isEnabled():
                                 self.set_graphic(x_label="Time (s)", y_label="Current (A)", num_graphs=2, additional_ylabel="Voltage (V)")
                                 self.graphs = 2
-                                self.controller.set_mode("automatic", keithley_selected=3, excel=file, sheet=sheet, num_keithleys=num_keithleys)
+                                self.controller.set_mode("automatic", keithley_selected=3, excel=file, sheet=sheet, num_keithleys=num_keithleys, output_excel=name)
                                 self.keithley_selected = 3
 
                             self.run_mode_thread = RunModeThread(self.controller)

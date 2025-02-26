@@ -13,7 +13,7 @@ import re
 
 class AutomaticMode:
 
-    def __init__(self, keithley_selected, keithleys, mfc, data_measurement, excel_path, excel_sheet, num_keithleys):
+    def __init__(self, keithley_selected, keithleys, mfc, data_measurement, excel_path, excel_sheet, num_keithleys, output_excel):
         self.keithley_selected = keithley_selected
         self.keithleys = keithleys
         self.mfc = mfc
@@ -31,6 +31,7 @@ class AutomaticMode:
         self.thread_2 = None
         self.data = []
         self.start_time = None
+        self.output_excel = output_excel
 
 
     def run(self):
@@ -51,17 +52,18 @@ class AutomaticMode:
                 ad_time = measurement.get_ad_time()
                 measurement_time = measurement.get_measurement_time()
                 mfcs_flows = measurement.get_mfcs_flows()
+                total_flow2 = 0
 
                 for mfc_name, mfc_flow in mfcs_flows.items():
                     mfc_id = config.get_mfc_id(mfc_name)
                     max_flow = config.get_mfc_max_flow(mfc_name)
+                    total_flow2 += mfc_flow
                     self.mfc.set_flow(mfc_id, mfc_flow, max_flow)
 
-                total_flow = self.mfc.get_sum_flow()
-                print(f"{colored('[INFO]', 'blue')} Total flow: {total_flow} sccm")
+                print(f"{colored('[INFO]', 'blue')} Total flow: {total_flow2} sccm")
 
-                if total_flow > 200:
-                    print(f"{colored('[WARNING]', 'yellow')} Skipping measurement {i+1} as total flow ({total_flow}) exceeds 200.\n")
+                if total_flow2 > 200:
+                    print(f"{colored('[WARNING]', 'yellow')} Skipping measurement {i+1} as total flow ({total_flow2}) exceeds 200.\n")
                     continue 
 
                 # Aquí se acumulan los datos de la medición
@@ -78,7 +80,7 @@ class AutomaticMode:
                     elapsed_time = time.time() - self.start_time
 
                     try:
-                        data = data_manager.run(self.barrier, elapsed_time=elapsed_time, saving_time=sv_time)
+                        data = data_manager.run2(self.barrier, elapsed_time=elapsed_time, saving_time=sv_time)
                         self.data.append(data)  # Guardar datos en cada iteración
 
                         measurement_data.append(data)  # Acumulando datos de esta medición
@@ -104,7 +106,7 @@ class AutomaticMode:
                     elapsed_time = time.time() - self.start_time
 
                     try:
-                        data = data_manager.run(self.barrier, elapsed_time=elapsed_time, saving_time=sv_time)
+                        data = data_manager.run2(self.barrier, elapsed_time=elapsed_time, saving_time=sv_time)
                         self.data.append(data)  # Guardar datos en cada iteración
 
                         measurement_data.append(data)  # Acumulando datos de esta medición
@@ -132,7 +134,7 @@ class AutomaticMode:
                     elapsed_time = time.time() - self.start_time
 
                     try:
-                        data = data_manager.run(self.barrier, elapsed_time=elapsed_time, saving_time=sv_time)
+                        data = data_manager.run2(self.barrier, elapsed_time=elapsed_time, saving_time=sv_time)
                         self.data.append(data)  # Guardar datos en cada iteración
 
                         measurement_data.append(data)  # Acumulando datos de esta medición
@@ -184,8 +186,11 @@ class AutomaticMode:
         return electrical_mesurement
 
     def saving_data(self):
-
-        name = f"Measure_{time.strftime('%Y%m%d-%H%M%S')}.xlsx"
+        if self.output_excel is None:
+            name = f"Measure_{time.strftime('%Y%m%d-%H%M%S')}.xlsx"
+        else:
+            name = f"{self.output_excel}.xlsx"
+            
         output = OutputExcel(f"./data/{name}", self.data)
         output.save_excel()
 

@@ -1,6 +1,8 @@
 from termcolor import colored
 import time
 
+import threading
+
 class DataManager:
     def __init__(self, mfc, electrical_types, data_measurement, measurement_time, ad_time, sv_time):
         self.mfc = mfc
@@ -21,6 +23,7 @@ class DataManager:
         for i, _ in enumerate(self.electrical_types):
             self.data[f"Voltage_{i+1}"] = []  
             self.data[f"Current_{i+1}"] = []
+
 
     def get_data(self, elapsed_time = None):
         data = {}
@@ -88,7 +91,40 @@ class DataManager:
 
         print()
 
-    def run(self, barrier=None, stop_event=None, elapsed_time=0, saving_time=None):
+    def run(self, barrier=None, stop_event=None, elapsed_time=0, saving_time=None, steps=None):
+        # Wait all electrical types to start before starting the measurement
+        if barrier is not None:
+            barrier.wait()
+
+        end_time = self.measurement_time
+
+        for step in range(steps):
+            current_measure_time = elapsed_time + (self.measurement_time / steps) * step
+            
+            # Start a thread for fetching data during the sleep period
+            def periodic_data_fetch(start_time):
+                current_time = start_time
+                while current_time < start_time + self.measurement_time / steps:
+                    data = self.get_data(current_time)
+                    self.save_data(data)
+                    current_time += saving_time
+
+            fetch_thread = threading.Thread(target=periodic_data_fetch, args=(current_measure_time,))
+            fetch_thread.start()
+
+            # Main measurement
+            data = self.get_data(current_measure_time)
+            self.save_data(data)
+
+            # Sleep until the next measurement
+            time.sleep(self.measurement_time / steps)
+
+            # Wait for the fetch thread to finish
+            fetch_thread.join()
+
+        return self.data
+    
+    def run2(self, barrier=None, stop_event=None, elapsed_time=0, saving_time=None):
         # Wait all electrical types to start before starting the measurement
         if barrier is not None:
             barrier.wait()
@@ -122,4 +158,5 @@ class DataManager:
                 self.save_data(data)
 
         return self.data
+        
         
